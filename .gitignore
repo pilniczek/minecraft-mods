@@ -11,3 +11,6 @@ custom_blocks/*/vendor/mods/*.jar
 *.iml
 .vscode/
 .DS_Store
+
+# Work report (work-report skill) - git add -f to commit it
+/WORK-REPORT.md

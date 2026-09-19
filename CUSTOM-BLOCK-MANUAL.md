@@ -4,7 +4,7 @@ How a brand new block type, rather than a variant of an existing one, gets made 
 
 Java Edition needs a mod, written here against Fabric and Mojang official mappings. Bedrock Edition needs an addon, which is pure JSON. The two share nothing but the texture, so both halves are covered.
 
-Target versions are listed in [README.md](README.md). Java Edition moved to year-based numbering in 2026, so `1.21.x` was followed by `26.1`, `26.2` and `26.3`, while Bedrock stayed on `1.21.x`. Anything written for `1.20` or `1.21` will differ from what is below.
+Target versions, and why they look unfamiliar, are in [README.md](README.md). Everything below is written for Minecraft 26.3 and Mojang official mappings. Section 7 lists what earlier versions did differently, because most tutorials online are still written against those.
 
 ## The core fact
 
@@ -78,7 +78,7 @@ src/main/java/<package>/
 }
 ```
 
-`items/<name>.json` is an item model definition, the format introduced in 1.21.4. It is not a plain model and does not live under `models/item/`:
+`items/<name>.json` is an item model definition. It selects a model rather than being one, so it is not interchangeable with the file above:
 
 ```json
 {
@@ -104,7 +104,7 @@ src/main/java/<package>/
 }
 ```
 
-Both `loot_table` and `tags/block` are singular. They were renamed from the plural forms in 1.21, and older tutorials still show `loot_tables` and `tags/blocks`.
+Both `loot_table` and `tags/block` are singular. Section 7 lists the folders that were renamed and when.
 
 `lang/en_us.json` supplies the display name:
 
@@ -224,12 +224,46 @@ Block `format_version` 1.21.0 is stable, so no experimental toggle is needed.
 
 ## 6. Shipping it
 
-Neither edition needs files copied into game directories by hand.
+Neither edition needs files copied into game directories by hand, and neither has a practical marketplace route.
 
-Bedrock: zip the two pack folders together and rename the zip to `.mcaddon`. Opening that one file imports both packs. For a shared world, apply the packs to a Realm or list them in a dedicated server's `world_behavior_packs.json` and `world_resource_packs.json`, and joining clients download them automatically.
+The Bedrock Marketplace exists but is partner-gated: an application, a Mojang review, a commercial contract and a revenue share. It is built for studios selling content. Java Edition has no equivalent at all.
 
-Java: a mod is code, so a server never pushes it to clients. Each player installs it. The least friction is a `.mrpack` modpack holding the mod jar and Fabric API in `overrides/mods/`, opened with the Modrinth App, which installs the loader itself.
+| | Bedrock | Java |
+| --- | --- | --- |
+| What ships | `.mcaddon`, a renamed zip of both packs | `.mrpack`, a modpack holding the jars |
+| How a friend installs it | Opens the file; the game imports it | Opens the file with the Modrinth App |
+| Loader handled for them | Not needed, no code involved | Yes, the App installs Fabric Loader |
+| A server can deliver it | Yes | No |
+| Marketplace | Partner-gated, commercial | Does not exist |
 
-There is no marketplace route for either. The Bedrock Marketplace is partner-gated and commercial, and Java Edition has no equivalent at all.
+### Bedrock auto-delivery
 
-See [custom_blocks/eye_block/README.md](custom_blocks/eye_block/README.md) for a worked example of both.
+Applying the packs to a Realm, or listing them in a dedicated server's `world_behavior_packs.json` and `world_resource_packs.json`, makes joining clients download them. Players install nothing.
+
+### Java has no auto-delivery
+
+A Java mod is code, so a server never pushes it to clients. The `resource-pack` setting in `server.properties` auto-sends textures only, and textures alone cannot add a block. Every player installs the mod.
+
+The least friction is a `.mrpack`: a zip holding `modrinth.index.json` and an `overrides/` tree. The manifest names the Minecraft and Fabric Loader versions; the Modrinth App installs the loader, then copies `overrides/` into a new instance.
+
+The manifest can also list remote downloads in `files[]`, but Modrinth accepts only URLs on `cdn.modrinth.com`, `github.com`, `raw.githubusercontent.com` and `gitlab.com`, and each entry needs SHA-1 and SHA-512 hashes. Putting the jars in `overrides/mods/` instead avoids the URLs, the hashes and the need to publish anything, so an unlisted mod ships as easily as a published one.
+
+Build and release commands are in [README.md](README.md).
+
+## 7. What earlier versions did differently
+
+Most block tutorials online predate this layout. The differences that break a copied example:
+
+| Change | Before | Now |
+| --- | --- | --- |
+| Version numbering | `1.20.x`, `1.21.x` | `26.1`, `26.2`, `26.3` |
+| Mappings in Fabric docs | Yarn: `AbstractBlock.Settings`, `Registries` | Mojang: `BlockBehaviour.Properties`, `BuiltInRegistries` |
+| Item model | `models/item/<name>.json`, a plain model | `items/<name>.json`, an item model definition, since 1.21.4 |
+| Loot table folder | `loot_tables/` | `loot_table/`, renamed in 1.21 |
+| Block tag folder | `tags/blocks/` | `tags/block/`, renamed in 1.21 |
+| Block registration | `Registry.register(registry, id, block)` | `properties.setId(id)` first, and `BlockItemId` for blocks with items, since 26.2 |
+| Block codecs | Every block class defined a `Codec` | Removed in 26.3, along with the `block_type` registry |
+
+A block model and an item model are the same format since 1.21.4, so `models/block/` and `models/item/` are organisational only. The item model definition in `items/` is a different thing: it selects a model rather than being one.
+
+See [custom_blocks/eye_block/README.md](custom_blocks/eye_block/README.md) for a worked example of both editions.
