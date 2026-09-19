@@ -1,0 +1,23 @@
+{
+	"schemaVersion": 1,
+	"id": "custom_blocks",
+	"version": "${version}",
+	"name": "Eye Block",
+	"description": "Adds the Eye Block.",
+	"contact": {
+		"sources": "https://github.com/pilniczek/minecraft-mods"
+	},
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.example.customblocks.CustomBlocks"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

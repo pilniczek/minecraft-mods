@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Eye Block Resources",
+    "description": "Textures for the Eye Block.",
+    "uuid": "24bd18a1-3362-4698-b569-28b4afadf5ae",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "c236078e-7176-4fe3-b28b-cd937c410443",
+      "version": [1, 0, 0]
+    }
+  ]
+}

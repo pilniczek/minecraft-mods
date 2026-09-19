@@ -1,0 +1,18 @@
+pluginManagement {
+	repositories {
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		mavenCentral()
+		gradlePluginPortal()
+	}
+
+	plugins {
+		id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	}
+}
+
+rootProject.name = 'minecraft-mods'
+
+include 'custom_blocks:eye_block'

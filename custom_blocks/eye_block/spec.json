@@ -1,0 +1,14 @@
+{
+  "identifier": "custom_blocks:eye_block",
+  "display_name": "Eye Block",
+  "texture": "texture/eye_block.png",
+  "faces": "all",
+  "hardness": 1.5,
+  "explosion_resistance": 6,
+  "light_emission": 7,
+  "tool": "pickaxe",
+  "minimum_tool_tier": "stone",
+  "sound_group": "stone",
+  "map_color": "#efefef",
+  "drops": "self"
+}

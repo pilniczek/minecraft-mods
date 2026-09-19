@@ -1,0 +1,4 @@
+tasks.named('wrapper', Wrapper) {
+	gradleVersion = '9.6.0'
+	distributionType = Wrapper.DistributionType.BIN
+}

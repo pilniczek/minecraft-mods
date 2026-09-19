@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "custom_blocks:block/eye_block" }
+  }
+}

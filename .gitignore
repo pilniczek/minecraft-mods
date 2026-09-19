@@ -1,0 +1,13 @@
+.gradle/
+build/
+out/
+run/
+*.class
+
+custom_blocks/*/dist/
+custom_blocks/*/vendor/mods/*.jar
+
+.idea/
+*.iml
+.vscode/
+.DS_Store

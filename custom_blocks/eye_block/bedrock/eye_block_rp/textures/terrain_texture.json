@@ -1,0 +1,11 @@
+{
+  "resource_pack_name": "eye_block_rp",
+  "texture_name": "atlas.terrain",
+  "padding": 8,
+  "num_mip_levels": 4,
+  "texture_data": {
+    "eye_block": {
+      "textures": "textures/blocks/eye_block"
+    }
+  }
+}
