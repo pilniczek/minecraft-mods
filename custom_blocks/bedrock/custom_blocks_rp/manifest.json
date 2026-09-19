@@ -1,8 +1,8 @@
 {
   "format_version": 2,
   "header": {
-    "name": "Eye Block Resources",
-    "description": "Textures for the Eye Block.",
+    "name": "Custom Blocks Resources",
+    "description": "Textures for the custom blocks.",
     "uuid": "24bd18a1-3362-4698-b569-28b4afadf5ae",
     "version": [1, 0, 0],
     "min_engine_version": [1, 21, 0]

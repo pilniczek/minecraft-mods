@@ -1,0 +1,33 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:recipe_shaped": {
+    "description": {
+      "identifier": "custom_blocks:eye_block"
+    },
+    "tags": [
+      "crafting_table"
+    ],
+    "pattern": [
+      " D ",
+      "DRD",
+      " D "
+    ],
+    "key": {
+      "D": {
+        "item": "minecraft:dirt"
+      },
+      "R": {
+        "item": "minecraft:rotten_flesh"
+      }
+    },
+    "unlock": [
+      {
+        "item": "minecraft:rotten_flesh"
+      }
+    ],
+    "result": {
+      "item": "custom_blocks:eye_block",
+      "count": 1
+    }
+  }
+}

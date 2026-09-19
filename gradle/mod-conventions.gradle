@@ -26,3 +26,71 @@ jar {
 		rename { "${it}_${project.base.archivesName.get()}" }
 	}
 }
+
+def resolvedModrinthToken = {
+	def fromEnvironment = System.getenv('MODRINTH_TOKEN')
+
+	if (fromEnvironment) {
+		return fromEnvironment.trim()
+	}
+
+	def envFile = rootProject.file('.env')
+
+	if (!envFile.exists()) {
+		return null
+	}
+
+	def prefix = 'MODRINTH_TOKEN='
+
+	def line = envFile.readLines()
+			.collect { it.trim() }
+			.collect { it.startsWith('export ') ? it.substring('export '.length()).trim() : it }
+			.find { it.startsWith(prefix) }
+
+	if (line == null) {
+		return null
+	}
+
+	def value = line.substring(prefix.length()).trim()
+
+	if (value.length() >= 2 && (value.startsWith('"') && value.endsWith('"') || value.startsWith("'") && value.endsWith("'"))) {
+		value = value.substring(1, value.length() - 1)
+	}
+
+	return value ?: null
+}()
+
+modrinth {
+	def minecraftVersion = rootProject.property('minecraft_version')
+	def changelogFile = project.file('CHANGELOG.md')
+
+	projectId = project.ext.modrinthProjectId
+	versionNumber = "${project.version}+${minecraftVersion}"
+	versionName = "${project.ext.modrinthTitle} ${project.version} for Minecraft ${minecraftVersion}"
+	versionType = 'release'
+	gameVersions = [minecraftVersion]
+	loaders = ['fabric']
+	environment = 'client_and_server'
+	changelog = changelogFile.exists() ? changelogFile.text : "Release ${project.version}."
+	debugMode = project.hasProperty('modrinthDebug')
+
+	if (resolvedModrinthToken) {
+		token = resolvedModrinthToken
+	}
+
+	dependencies {
+		required.project 'fabric-api'
+	}
+}
+
+afterEvaluate {
+	def shippableJar = tasks.findByName('remapJar') ?: tasks.findByName('jar')
+
+	if (shippableJar == null) {
+		throw new GradleException("Neither a remapJar nor a jar task exists in ${project.path}, so Minotaur has nothing to upload.")
+	}
+
+	modrinth {
+		uploadFile = shippableJar
+	}
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "D": "minecraft:dirt",
+    "R": "minecraft:rotten_flesh"
+  },
+  "pattern": [
+    " D ",
+    "DRD",
+    " D "
+  ],
+  "result": {
+    "id": "custom_blocks:eye_block"
+  }
+}

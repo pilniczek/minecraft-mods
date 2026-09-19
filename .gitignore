@@ -4,8 +4,12 @@ out/
 run/
 *.class
 
-custom_blocks/*/dist/
-custom_blocks/*/vendor/mods/*.jar
+*/dist/
+*/vendor/mods/*.jar
+
+.env
+.env.*
+!.env.example
 
 .idea/
 *.iml

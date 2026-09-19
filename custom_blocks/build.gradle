@@ -1,10 +1,14 @@
 plugins {
 	id 'net.fabricmc.fabric-loom'
+	id 'com.modrinth.minotaur'
 }
 
 base {
-	archivesName = 'eye-block'
+	archivesName = 'custom-blocks'
 }
+
+ext.modrinthProjectId = 'custom-blocks-pilniczek'
+ext.modrinthTitle = 'Custom Blocks'
 
 apply from: rootProject.file('gradle/mod-conventions.gradle')
 

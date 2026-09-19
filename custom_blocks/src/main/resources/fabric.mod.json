@@ -2,8 +2,8 @@
 	"schemaVersion": 1,
 	"id": "custom_blocks",
 	"version": "${version}",
-	"name": "Eye Block",
-	"description": "Adds the Eye Block.",
+	"name": "Custom Blocks",
+	"description": "A decorative cube, craftable from rotten flesh and dirt.",
 	"contact": {
 		"sources": "https://github.com/pilniczek/minecraft-mods"
 	},

@@ -10,9 +10,10 @@ pluginManagement {
 
 	plugins {
 		id 'net.fabricmc.fabric-loom' version "${loom_version}"
+		id 'com.modrinth.minotaur' version "${minotaur_version}"
 	}
 }
 
 rootProject.name = 'minecraft-mods'
 
-include 'custom_blocks:eye_block'
+include 'custom_blocks'

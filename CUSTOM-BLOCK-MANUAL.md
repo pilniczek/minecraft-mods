@@ -56,6 +56,8 @@ src/main/resources/
     lang/en_us.json
   data/<modid>/
     loot_table/blocks/<name>.json
+    recipe/<name>.json
+    advancement/recipes/<category>/<name>.json
   data/minecraft/tags/block/mineable/pickaxe.json
 src/main/java/<package>/
   <ModClass>.java
@@ -111,6 +113,53 @@ Both `loot_table` and `tags/block` are singular. Section 7 lists the folders tha
 ```json
 { "block.<modid>.<name>": "My Block" }
 ```
+
+### Making it craftable
+
+A block registered in code is obtainable only from the creative inventory or `/give`. A recipe file makes it craftable in survival. `data/<modid>/recipe/<name>.json` for a shaped recipe:
+
+```json
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "D": "minecraft:dirt",
+    "R": "minecraft:rotten_flesh"
+  },
+  "pattern": [
+    " D ",
+    "DRD",
+    " D "
+  ],
+  "result": { "id": "<modid>:<name>" }
+}
+```
+
+`pattern` is one string per row, each character a key letter, a space meaning empty. A shaped recipe fixes the relative arrangement but not the position, so the shape can sit anywhere in the grid. Use `minecraft:crafting_shapeless` with an `ingredients` list instead when the arrangement should not matter.
+
+A `key` value is an item id, or a `#`-prefixed item tag such as `#minecraft:planks`. `result` takes `id`, and `count` only when it is not 1. `category` is cosmetic, choosing the recipe book tab: `building`, `redstone`, `equipment` or `misc`.
+
+The recipe now works at a crafting table, but it stays hidden in the recipe book until an advancement grants it. That is a separate file, `data/<modid>/advancement/recipes/<category>/<name>.json`:
+
+```json
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_ingredient": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": { "items": [{ "items": "minecraft:rotten_flesh" }] }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": { "recipes": "<modid>:<name>" }
+    }
+  },
+  "requirements": [["has_the_recipe", "has_ingredient"]],
+  "rewards": { "recipes": ["<modid>:<name>"] }
+}
+```
+
+The nested `requirements` list is an OR of ANDs, so either criterion alone unlocks it: picking up the rarest ingredient, or receiving the recipe some other way. Pick the ingredient a player is least likely to already own, otherwise the recipe unlocks before they could use it.
 
 ## 3. Java Edition registration
 
@@ -179,12 +228,15 @@ The tool tag goes in `data/minecraft/tags/block/mineable/pickaxe.json`:
 
 ## 5. Bedrock Edition
 
+Bedrock moved to year-based numbering in 2026 as well, on its own scale: Bedrock `26.50` is the same drop as Java `26.3`. It also keeps the old form, so `26.50` is equally `1.26.50`, and pack manifests use that `1.x` form.
+
 An addon is two packs and no code.
 
 ```
 <name>_bp/
   manifest.json
   blocks/<name>.json
+  recipes/<name>.json
 <name>_rp/
   manifest.json
   blocks.json
@@ -222,19 +274,46 @@ The block itself is a component document:
 
 Block `format_version` 1.21.0 is stable, so no experimental toggle is needed.
 
+### Making it craftable
+
+Bedrock recipes live in the behaviour pack and describe the same intent as the Java pair, in one file:
+
+```json
+{
+  "format_version": "1.21.0",
+  "minecraft:recipe_shaped": {
+    "description": { "identifier": "<modid>:<name>" },
+    "tags": ["crafting_table"],
+    "pattern": [
+      " D ",
+      "DRD",
+      " D "
+    ],
+    "key": {
+      "D": { "item": "minecraft:dirt" },
+      "R": { "item": "minecraft:rotten_flesh" }
+    },
+    "unlock": [{ "item": "minecraft:rotten_flesh" }],
+    "result": { "item": "<modid>:<name>", "count": 1 }
+  }
+}
+```
+
+Three differences from Java are easy to trip over. A `key` value is an object with an `item` field, not a bare string. `tags` names which crafting station accepts the recipe, and omitting `crafting_table` makes the recipe uncraftable rather than universal. `unlock` replaces Java's separate advancement file, so the recipe book entry is part of the recipe.
+
 ## 6. Shipping it
 
-Neither edition needs files copied into game directories by hand, and neither has a practical marketplace route.
+Neither edition needs files copied into game directories by hand, but the two routes are nothing alike.
 
-The Bedrock Marketplace exists but is partner-gated: an application, a Mojang review, a commercial contract and a revenue share. It is built for studios selling content. Java Edition has no equivalent at all.
+Java Edition has Modrinth: free to publish on, open to anyone, and wired into a launcher that installs mods and their dependencies. Bedrock has no such thing. Its Marketplace is partner-gated, an application plus a Mojang review plus a commercial contract and a revenue share, built for studios selling content, so a Bedrock addon travels as a file.
 
 | | Bedrock | Java |
 | --- | --- | --- |
-| What ships | `.mcaddon`, a renamed zip of both packs | `.mrpack`, a modpack holding the jars |
-| How a friend installs it | Opens the file; the game imports it | Opens the file with the Modrinth App |
-| Loader handled for them | Not needed, no code involved | Yes, the App installs Fabric Loader |
+| What ships | `.mcaddon`, a renamed zip of both packs | the mod jar, published to Modrinth |
+| How a friend installs it | Opens the file; the game imports it | Clicks Install on the Modrinth project page |
+| Loader handled for them | Not needed, no code involved | Yes, the App manages Fabric Loader and pulls in Fabric API |
 | A server can deliver it | Yes | No |
-| Marketplace | Partner-gated, commercial | Does not exist |
+| Marketplace | Partner-gated, commercial | Modrinth, free, reviewed in 24 to 48 hours |
 
 ### Bedrock auto-delivery
 
@@ -244,9 +323,29 @@ Applying the packs to a Realm, or listing them in a dedicated server's `world_be
 
 A Java mod is code, so a server never pushes it to clients. The `resource-pack` setting in `server.properties` auto-sends textures only, and textures alone cannot add a block. Every player installs the mod.
 
-The least friction is a `.mrpack`: a zip holding `modrinth.index.json` and an `overrides/` tree. The manifest names the Minecraft and Fabric Loader versions; the Modrinth App installs the loader, then copies `overrides/` into a new instance.
+Modrinth hosts two kinds of project, and picking the wrong one is the main trap here.
 
-The manifest can also list remote downloads in `files[]`, but Modrinth accepts only URLs on `cdn.modrinth.com`, `github.com`, `raw.githubusercontent.com` and `gitlab.com`, and each entry needs SHA-1 and SHA-512 hashes. Putting the jars in `overrides/mods/` instead avoids the URLs, the hashes and the need to publish anything, so an unlisted mod ships as easily as a published one.
+A **mod** project holds the jar. Installing it adds the mod to a profile the player already has, and the App resolves the declared Fabric API dependency by itself. A **modpack** project holds a `.mrpack`: a zip of `modrinth.index.json` plus an `overrides/` tree, which becomes a whole new instance with its own mod set, loader version and world.
+
+One custom block added to a world someone already plays is a mod project. A modpack would strand them in a second instance.
+
+Which one a project becomes is not a setting. The creation dialog asks only for a name, a URL, an owner, a visibility and a summary, plus a **Type** of `Project` or `Server`, where `Server` means a server listing rather than content. Modrinth reads the project type off the loaders on the **first version uploaded**: `fabric` makes it a mod, `mrpack` makes it a modpack. Uploading the wrong artifact first is how a project ends up the wrong kind.
+
+The order that follows from this is worth knowing before starting, because tags and content disclosures stay locked until a version exists:
+
+```mermaid
+flowchart TD
+  C[Create project] --> V[Upload first version]
+  V --> T[Type derived from its loaders]
+  T --> K[Publishing checklist unlocks]
+  K --> S[Submit for review]
+  S --> A[Human review, 24 to 48 hours]
+  A --> P[Chosen visibility takes effect]
+```
+
+Publishing is not instant, and a draft cannot be shared in the meantime: it is visible only to project members. After approval, Unlisted keeps the project off search while leaving the link installable.
+
+Modrinth also requires third-party mods to be **declared, not bundled**, so Fabric API goes in the version's dependency list. A `.mrpack` built for direct hand-off can carry Fabric API inside `overrides/mods/`, and that is the easy route when nothing is being published; publishing that same file as a modpack project would mean moving Fabric API into `files[]` with SHA-1 and SHA-512 hashes and a URL on `cdn.modrinth.com`, `github.com`, `raw.githubusercontent.com` or `gitlab.com`, the only hosts the manifest accepts.
 
 Build and release commands are in [README.md](README.md).
 
@@ -261,9 +360,13 @@ Most block tutorials online predate this layout. The differences that break a co
 | Item model | `models/item/<name>.json`, a plain model | `items/<name>.json`, an item model definition, since 1.21.4 |
 | Loot table folder | `loot_tables/` | `loot_table/`, renamed in 1.21 |
 | Block tag folder | `tags/blocks/` | `tags/block/`, renamed in 1.21 |
+| Recipe folder | `recipes/` | `recipe/`, renamed in 1.21 |
+| Advancement folder | `advancements/` | `advancement/`, renamed in 1.21 |
+| Recipe ingredients | `{ "item": "minecraft:dirt" }` | a bare id string, since 1.21.2 |
+| Recipe result | `{ "item": "...", "count": 1 }` | `{ "id": "..." }`, since 1.20.5 |
 | Block registration | `Registry.register(registry, id, block)` | `properties.setId(id)` first, and `BlockItemId` for blocks with items, since 26.2 |
 | Block codecs | Every block class defined a `Codec` | Removed in 26.3, along with the `block_type` registry |
 
 A block model and an item model are the same format since 1.21.4, so `models/block/` and `models/item/` are organisational only. The item model definition in `items/` is a different thing: it selects a model rather than being one.
 
-See [custom_blocks/eye_block/README.md](custom_blocks/eye_block/README.md) for a worked example of both editions.
+See [custom_blocks/README.md](custom_blocks/README.md) for a worked example of both editions.

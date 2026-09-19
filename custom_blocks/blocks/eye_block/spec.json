@@ -11,5 +11,18 @@
   "sound_group": "stone",
   "map_color_java": "QUARTZ",
   "map_color_bedrock": "#efefef",
-  "drops": "self"
+  "drops": "self",
+  "recipe": {
+    "type": "shaped",
+    "pattern": [
+      " D ",
+      "DRD",
+      " D "
+    ],
+    "key": {
+      "D": "minecraft:dirt",
+      "R": "minecraft:rotten_flesh"
+    },
+    "result_count": 1
+  }
 }

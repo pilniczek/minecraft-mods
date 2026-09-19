@@ -1,0 +1,12 @@
+# docs-consistency-check ignore file
+# .claude/ stays in scope on purpose: the two skills restate what the READMEs
+# say, so they are exactly where drift needs catching.
+
+.gradle/
+build/
+out/
+run/
+dist/
+vendor/
+images/
+gradle/wrapper/

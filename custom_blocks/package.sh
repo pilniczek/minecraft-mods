@@ -25,7 +25,7 @@ build_mcaddon() {
   local staging="$here/dist/addon"
   rm -rf "$staging"
   mkdir -p "$staging"
-  cp -r "$here/bedrock/eye_block_bp" "$here/bedrock/eye_block_rp" "$staging/"
+  cp -r "$here/bedrock/custom_blocks_bp" "$here/bedrock/custom_blocks_rp" "$staging/"
 
   local out="$here/dist/${slug}-${PACK_VERSION}.mcaddon"
   rm -f "$out"
@@ -43,7 +43,7 @@ build_mrpack() {
   local vendor_jars=("$here"/vendor/mods/*.jar)
 
   if [[ ${#mod_jars[@]} -eq 0 ]]; then
-    echo "skipping mrpack: no jar in build/libs/, run ./gradlew :custom_blocks:eye_block:build first" >&2
+    echo "skipping mrpack: no jar in build/libs/, run ./gradlew :custom_blocks:build first" >&2
     return 0
   fi
   if [[ ${#vendor_jars[@]} -eq 0 ]]; then

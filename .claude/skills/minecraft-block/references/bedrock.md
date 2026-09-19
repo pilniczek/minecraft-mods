@@ -1,23 +1,28 @@
 # Bedrock Edition addon blocks
 
-Bedrock keeps its own `1.21.x` numbering; the year-based scheme is Java Edition only. Block `format_version` 1.21.0 is stable, so custom blocks need no experimental toggle.
+Bedrock moved to year-based numbering in 2026 too, on its own scale: Bedrock `26.50` is the same drop as Java `26.3`, both released 2026-09-15. It also keeps the old form, so `26.50` is equally `1.26.50`, and manifests use that `1.x` form in `min_engine_version`.
+
+`format_version` inside a block or recipe file is a schema version, not a game version. 1.21.0 is stable, so custom blocks need no experimental toggle.
 
 An addon is two packs and no compiled code. The behaviour pack defines the block; the resource pack supplies how it looks and sounds.
 
 ## Layout
 
 ```
-custom_blocks/<block>/bedrock/
-  <block>_bp/
+<mod>/bedrock/
+  <modid>_bp/
     manifest.json
     blocks/<block>.json
-  <block>_rp/
+    recipes/<block>.json
+  <modid>_rp/
     manifest.json
     blocks.json
     texts/en_US.lang
     textures/terrain_texture.json
     textures/blocks/<block>.png
 ```
+
+One pack pair holds every block of the mod. A second block adds a `blocks/` file, a `recipes/` file, a PNG, a `terrain_texture.json` entry, a `blocks.json` entry and a `.lang` line. Never a second pack pair: that would mean four more UUIDs, a second `.mcaddon` and a second import for the player.
 
 `build.sh` writes the PNG. Everything else is hand-written.
 
@@ -114,6 +119,35 @@ tile.<modid>:<block>.name=<Block>
 | `minecraft:loot` | Path to a loot table; custom blocks drop themselves by default. |
 | `minecraft:collision_box` / `minecraft:selection_box` | Non-cube hitboxes. |
 
+## Recipes
+
+A craftable block needs `<block>_bp/recipes/<block>.json`. One file covers what Java splits between a recipe and an advancement:
+
+```json
+{
+  "format_version": "1.21.0",
+  "minecraft:recipe_shaped": {
+    "description": { "identifier": "<modid>:<block>" },
+    "tags": ["crafting_table"],
+    "pattern": [
+      " D ",
+      "DRD",
+      " D "
+    ],
+    "key": {
+      "D": { "item": "minecraft:dirt" },
+      "R": { "item": "minecraft:rotten_flesh" }
+    },
+    "unlock": [{ "item": "minecraft:rotten_flesh" }],
+    "result": { "item": "<modid>:<block>", "count": 1 }
+  }
+}
+```
+
+Three differences from Java are easy to trip over. A `key` value is an object with an `item` field, not a bare string. `tags` names which crafting station accepts the recipe, and omitting `crafting_table` makes the recipe uncraftable rather than universal. `unlock` replaces Java's separate advancement file.
+
+Use `minecraft:recipe_shapeless` with an `ingredients` list when the arrangement should not matter.
+
 ## Where Bedrock cannot match Java
 
 Bedrock has no equivalent of the Java `needs_<tier>_tool` tag. Tool tier gating is approximated by per-tool destroy speeds, and a hard requirement needs a `minecraft:loot` component pointing at a loot table with tool conditions.
@@ -132,6 +166,8 @@ Map colour is a free hex value on Bedrock and a fixed enum on Java, so the two c
 | Sound | `.sound(SoundType.X)` | `blocks.json` sound entry |
 | Name | `lang/en_us.json` | `texts/en_US.lang` |
 | Creative tab | `CreativeModeTabEvents` in code | `description.menu_category` |
+| Recipe | `data/<modid>/recipe/<block>.json` | `<block>_bp/recipes/<block>.json` |
+| Recipe book unlock | a separate advancement under `advancement/recipes/` | the `unlock` array inside the recipe |
 
 ## Testing
 
